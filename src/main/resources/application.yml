@@ -1,0 +1,6 @@
+logging:
+  level:
+    root: ERROR
+org:
+  slf4j:
+      defaultLogLevel:  ERROR
