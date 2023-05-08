@@ -24,7 +24,7 @@ public class SequenceWebFluxClient {
     public static void main(String[] args) {
 
         long startTime = System.currentTimeMillis();
-        log.info("Request process started asynchronously");
+        log.info("Request process started synchronously");
 
         Mono.just("/id")
                 .flatMap(SequenceWebFluxClient::sendGetRequestAsynchronously)                 // Get Id
@@ -38,7 +38,7 @@ public class SequenceWebFluxClient {
                 })
                 .block();
 
-        log.info("Total time for downloading asynchronously with WebClient: {} milliseconds\n", System.currentTimeMillis() - startTime);
+        log.info("Total time for downloading synchronously with WebClient: {} milliseconds\n", System.currentTimeMillis() - startTime);
     }
 
 
