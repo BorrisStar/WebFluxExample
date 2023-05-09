@@ -16,10 +16,10 @@ public class PaginationFluxWebFluxClient {
 
     public static void main(String[] args) {
 
-        Mono.just("/flux?count=7")
+        Mono.just("/flux?count=10")
                 .flatMap(PaginationFluxWebFluxClient::sendGetRequestAsynchronously)                 // Get Id
                 .doOnSubscribe(sub -> log.info("Sending request to WebFluxExampleServer"))
-                .doOnSuccess(response -> log.info("Response - {} - received with success", response))
+                .doOnSuccess(response -> log.info("Response - \n{}", response))
                 .doOnError(error -> {
                     log.error("Sending request to WebFluxExampleServer finished with exception {}\n", error.getMessage());
                 })

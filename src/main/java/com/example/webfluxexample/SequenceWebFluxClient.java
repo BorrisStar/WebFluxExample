@@ -32,7 +32,7 @@ public class SequenceWebFluxClient {
                 .flatMap(body -> sendPostRequestAsynchronously("/name", body))      // Send Name -> get Position
                 .flatMap(body -> sendPostRequestAsynchronously("/position", body))  // Send Position -> get Salary
                 .doOnSubscribe(sub -> log.info("Sending request to WebFluxExampleServer"))
-                .doOnSuccess(response -> log.info("Response - Salary = {} - received with success", response))
+                .doOnSuccess(response -> log.info("Response - \nSalary = {}", response))
                 .doOnError(error -> {
                     log.error("Sending request to WebFluxExampleServer finished with exception {}\n", error.getMessage());
                 })
