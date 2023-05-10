@@ -9,4 +9,8 @@
         <sqlFile path="db_init.sql" relativeToChangelogFile="true"/>
     </changeSet>
 
+    <changeSet author="me" id="Add messages">
+        <sqlFile path="add_messages.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
 </databaseChangeLog>
