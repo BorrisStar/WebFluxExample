@@ -11,7 +11,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 @Slf4j
-public class SyncHttpClient {
+public class SyncComparison {
     private static final WebClient webClient = WebClient.builder().build();
     private static final String uri = "https://www.google.com";
 
@@ -35,7 +35,7 @@ public class SyncHttpClient {
         startTime = System.currentTimeMillis();
         log.info("Request process started asynchronously but in synchro mode");
         Flux.range(0, maxRequestNum)
-                .map(SyncHttpClient::sendRequestSynchronously)
+                .map(SyncComparison::sendRequestSynchronously)
                 .blockLast();
 
         log.info("Total time for downloading synchronously with WebClient: {} milliseconds\n", System.currentTimeMillis() - startTime);
