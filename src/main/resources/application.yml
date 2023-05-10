@@ -12,11 +12,6 @@ spring:
     username: user
     password: password
 
-    data:
-      r2dbc:
-        repositories:
-          enabled: true
-
   liquibase:
     change-log: classpath:/db.changelog/changelog.xml
     url: jdbc:postgresql://localhost:5442/testdb
