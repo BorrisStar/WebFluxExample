@@ -1,6 +1,24 @@
 logging:
   level:
     root: ERROR
-org:
-  slf4j:
-      defaultLogLevel:  ERROR
+    org:
+      springframework:
+        data:
+          r2dbc: DEBUG
+
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5442/testdb
+    username: user
+    password: password
+
+    data:
+      r2dbc:
+        repositories:
+          enabled: true
+
+  liquibase:
+    change-log: classpath:/db.changelog/changelog.xml
+    url: jdbc:postgresql://localhost:5442/testdb
+    user: user
+    password: password
