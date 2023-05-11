@@ -21,7 +21,10 @@ public class PaginationFluxWebFluxClient {
 
         Message newMessage = new Message();
 
-        sendGetRequestAsynchronously()                 // Get Messages
+        sendGetRequestAsynchronously()
+                .flatMap(PaginationFluxWebFluxClient::getLastId)// Get Messages
+                .flatMap(PaginationFluxWebFluxClient::sendNextMessage)
+                .flatMap(r -> sendGetRequestAsynchronously())
                 .doOnSubscribe(sub -> log.info("Sending request to WebFluxExampleServer"))
                 .doOnSuccess(response -> log.info("Response - \n{}", response))
                 .doOnError(error -> {
@@ -41,17 +44,20 @@ public class PaginationFluxWebFluxClient {
                 });
     }
 
-    private static Mono<Void> sendPostRequestAsynchronously(Message body) {
+    private static Mono<String> sendPostRequestAsynchronously(Message body) {
 
         return webClient
                 .post()
                 .uri(uriBase)
                 .body(BodyInserters.fromValue(body))
-                .exchangeToMono(new Void.class);
+                .exchangeToMono(clientResponse -> clientResponse.bodyToMono(String.class));
     }
 
-    private static Mono<String> sendNextMessage(List<Message> messages) {
-        long lastId = messages.stream().reduce((first, last) -> last).orElse(new Message(0L,"")).getId();
-        return sendPostRequestAsynchronously(new Message(lastId+1,"New Data");
+    private static Mono<String> sendNextMessage(Long lastId) {
+        return sendPostRequestAsynchronously(new Message(null, "New Data " + (lastId + 1)));
+    }
+
+    private static Mono<Long> getLastId(List<Message> messages) {
+        return Mono.just(messages.stream().reduce((first, last) -> last).orElse(new Message(0L, "")).getId());
     }
 }
