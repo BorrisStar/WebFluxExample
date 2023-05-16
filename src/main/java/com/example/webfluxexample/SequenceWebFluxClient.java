@@ -26,7 +26,7 @@ public class SequenceWebFluxClient {
         long startTime = System.currentTimeMillis();
         log.info("Request process started synchronously");
 
-        Mono.just("/id")
+        Mono.just("/best")
                 .flatMap(SequenceWebFluxClient::sendGetRequestAsynchronously)                 // Get Id
                 .flatMap(body -> sendPostRequestAsynchronously("/id", body))        // Send Id -> get Name
                 .flatMap(body -> sendPostRequestAsynchronously("/name", body))      // Send Name -> get Position
