@@ -19,8 +19,6 @@ public class PaginationFluxWebFluxClient {
 
     public static void main(String[] args) {
 
-        Message newMessage = new Message();
-
         sendGetRequestAsynchronously()
                 .flatMap(PaginationFluxWebFluxClient::getLastId)// Get Messages
                 .flatMap(PaginationFluxWebFluxClient::sendNextMessage)
