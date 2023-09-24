@@ -1,96 +1,88 @@
 package com.example.webfluxexample;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.util.stream.Collectors;
+
+import java.util.ArrayList;
+import java.util.stream.IntStream;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
+@Slf4j
 class WebFluxExampleApplicationTests {
 
     @Test
-    public void collectMultiMap() {
-        Flux.just("one", "two", "three", "four", "five", "six", "seven", "ten")
-                .collectMultimap(a -> a.charAt(0), b -> b)
-                .subscribe(System.out::println);
+    public void fluent_long_to_times_slower_then_short() {
+        var shortTiming = IntStream.range(0, 1000).mapToLong(i-> short_fluent_timing_old_style()).sum();
+        var longTiming = IntStream.range(0, 1000).mapToLong(i-> long_fluent_timing_functional_style()).sum();
+
+       assertTrue((2 > (longTiming / shortTiming)));
     }
 
-    @Test
-    public void collectToList() {
-        Flux.just("one", "two", "three", "four", "five")
-                .map(s -> s.charAt(0) + "_" + s )
-                .collect(Collectors.toList())
-                .subscribe(System.out::println);
+    // 1 reactive fluent
+    private long short_fluent_timing_old_style() {
+        var startedTime = System.currentTimeMillis();
+        var i10List = new ArrayList<Integer>();
+        var i100List = new ArrayList<Integer>();
+
+        StepVerifier.create(Flux.range(1, 100_000)
+                .handle((i, s) -> {
+                    var ix10 = i * 10;
+                    if (ix10 % 10 != 0) {
+                        return;
+                    }
+                    log.debug("ix10:" + ix10);
+                    i10List.add(i);
+
+                    var ix100 = ix10 * 10;
+                    if (ix100 % 100 != 0) {
+                        return;
+                    }
+                    log.debug("ix100:" + ix100);
+                    i100List.add(i);
+
+                    var ix200 = ix100 * 2;
+                    if (ix200 > 1000_000_000) {
+                        log.info("i > 1000_000_000:" + i);
+                        s.next(ix200);
+                    }
+                })
+        ).verifyComplete();
+
+        return System.currentTimeMillis() - startedTime;
     }
 
-    @Test
-    public void monoWithValueInsteadOfError() {
-        var mono  = betterCallDefaultForErrorMono(Mono.error(new IllegalStateException()));
+    private long long_fluent_timing_functional_style() {
+        var startedTime = System.currentTimeMillis();
+        var i10List = new ArrayList<Integer>();
+        var i100List = new ArrayList<Integer>();
 
-        StepVerifier.create(mono)
-                .expectNext("Default")
-                .verifyComplete();
+        StepVerifier.create(Flux.range(1, 100_000)
+                .map(i -> i * 10)
+                .doOnNext(i -> {
+                    log.debug("ix10:" + i);
+                    i10List.add(i);
+                })
+                .filter(i -> i % 10 == 0)
+                .map(i -> i * 10)
+                .filter(i -> i % 100 == 0)
+                .doOnNext(i -> {
+                    log.debug("ix100:" + i);
+                    i100List.add(i);
+                })
+                .map(i -> i * 2)
+                .filter(i -> i > 1000_000_000)
+                .doOnNext(i ->
+                        log.info("i > 1000_000_000:" + i)
+                )
+        ).verifyComplete();
 
-        mono = betterCallDefaultForErrorMono(Mono.just("Next"));
-
-        StepVerifier.create(mono)
-                .expectNext("Next")
-                .verifyComplete();
+        return System.currentTimeMillis() - startedTime;
     }
-
-    Mono<String> betterCallDefaultForErrorMono(Mono<String> mono) {
-        return mono.onErrorResume(e -> Mono.just("Default"));
-    }
-
-    @Test
-    void zipExample() {
-        Flux<String> fluxFruits = Flux.just("apple", "pear", "plum");
-        Flux<String> fluxColors = Flux.just("red", "green", "blue");
-        Flux<Integer> fluxAmounts = Flux.just(10, 20, 30);
-        Flux.zip(fluxFruits, fluxColors, fluxAmounts).subscribe(System.out::println);
-    }
-
-    @Test
-    void mapExample() {
-        Flux<String> fluxColors = Flux.just("red", "green", "blue");
-        fluxColors.map(color -> color.charAt(0)).subscribe(System.out::println);
-    }
-
-    @Test
-    void flatMapExample() {
-        Flux<String> fluxColors = Flux.just("red", "green", "blue");
-        fluxColors.flatMap(this::countSymbols).subscribe(System.out::println);
-    }
-    Flux<Integer> countSymbols(String str){
-        return Flux.just(str.length());
-    }
-
-    @Test
-    public void onErrorExample() {
-        Flux<String> fluxCalc = Flux.just(-1, 0, 1)
-                .map(i -> "10 / " + i + " = " + (10 / i));
-
-        fluxCalc.subscribe(value -> System.out.println("Next: " + value),
-                error -> System.err.println("Error: " + error));
-    }
-    @Test
-    public void fluxWithDoOnPrintln() {
-        Flux<String> fluxColors = Flux.just("red", "green", "blue");
-        fluxColors
-                .doOnSubscribe(s->System.out.println("start"))
-                .doOnNext(System.out::println)
-                .doOnComplete(()->System.out.println("end!\n"))
-                .toIterable()
-                .forEach(System.out::println);
-
-        fluxColors
-                .doOnSubscribe(s->System.out.println("\nstart2"))
-                .doOnNext(System.out::println)
-                .doOnComplete(()->System.out.println("end2!"))
-                .subscribe();
-    }
-
 }
