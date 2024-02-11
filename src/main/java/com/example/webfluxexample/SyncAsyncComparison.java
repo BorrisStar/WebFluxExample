@@ -37,7 +37,7 @@ public class SyncAsyncComparison {
         log.info("Request process started asynchronously");
         Flux.range(0, maxRequestNum)
                 .map(SyncAsyncComparison::sendRequestAsynchronously)
-                .blockLast();
+                .subscribe();
 
         log.info("Total time for downloading asynchronously with WebClient: {} milliseconds\n", System.currentTimeMillis() - startTime);
 //        Thread.sleep(10000);
@@ -46,7 +46,7 @@ public class SyncAsyncComparison {
 
     private static Mono<String> sendRequestAsynchronously(int i) {
 
-        Mono<String> mono = webClient
+        return webClient
                 .get()
                 .uri(uri)
                 .retrieve()
@@ -54,8 +54,5 @@ public class SyncAsyncComparison {
                 .doOnSubscribe(sub -> log.info("Subscribe to {} request", i))
                 .doOnSuccess(response -> log.info("Send request number {} to google.de is OK.", i))
                 .doOnError(error -> log.error("Send request number {} to google.de is not successful.", i, error));
-
-        mono.subscribe(System.out::println);
-        return mono;
     }
 }
